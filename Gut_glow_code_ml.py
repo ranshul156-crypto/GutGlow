@@ -5,6 +5,7 @@ from sklearn.metrics import roc_curve, auc, confusion_matrix
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
+from scipy.stats import spearmanr
 import warnings
 import os
 
@@ -120,16 +121,25 @@ df['consistency_score'] = (
 df['flare'] = df['is_flare'].astype(int)
 
 # ===============================
-# CORRELATIONS
+# CORRELATIONS (True Spearman Rank)
 # ===============================
-correlations = {
-    'Steps vs CDAI': np.corrcoef(df['daily_steps'], df['cdai_score'])[0,1],
-    'Temp vs CRP': np.corrcoef(df['skin_temp_c'], df['crp_mg_l'])[0,1],
-    'Flushes vs FCP': np.corrcoef(df['bathroom_visits'], df['fcp_ug_g'])[0,1],
-    'Sleep vs CDAI': np.corrcoef(df['sleep_efficiency_pct'], df['cdai_score'])[0,1]
+pairs = {
+    'Sleep efficiency vs. CDAI': ('sleep_efficiency_pct', 'cdai_score'),
+    'Bowel frequency vs. FCP': ('bathroom_visits', 'fcp_ug_g'),
+    'Daily steps vs. CDAI': ('daily_steps', 'cdai_score'),
+    'Skin temperature vs. CRP': ('skin_temp_c', 'crp_mg_l')
 }
 
-corr_df = pd.DataFrame(list(correlations.items()), columns=['biomarker_pair', 'correlation'])
+corr_results = []
+for pair_name, (col1, col2) in pairs.items():
+    rho, p_val = spearmanr(df[col1], df[col2])
+    corr_results.append({
+        'biomarker_pair': pair_name,
+        'spearman_rho': round(rho, 3),
+        'p_value': f"{p_val:.2e}"
+    })
+
+corr_df = pd.DataFrame(corr_results)
 corr_df.to_csv(f'{OUTPUT_DIR}/correlations.csv', index=False)
 
 # ===============================
