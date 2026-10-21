@@ -1,0 +1,2 @@
+train_subjects,test_subjects,train_rows,test_rows,roc_auc,pr_auc,sensitivity,specificity,true_negative,false_positive,false_negative,true_positive
+35,15,3150,1350,0.9802031204003533,0.8623676777918823,0.7674418604651163,0.9841772151898734,1244,20,20,66
